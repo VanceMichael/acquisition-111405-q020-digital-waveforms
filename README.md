@@ -13,7 +13,7 @@ npm run demo
 
 `npm test` 是初始产品的基线回归，验证现有摘要通路、原文摘要检查、本地来源响应，以及 CLI 在独立进程中的真实领取、重复导入和持久归档检查。该产品是一次执行后退出的采集程序，不提供常驻 HTTP 应用；`npm run collect` 执行领取，`npm run provider` 仅单独启动测试来源。
 
-`npm run acceptance:source` 执行 `test/feature.test.mjs` 中完整的新来源验收。此命令在初始版本会以非零状态退出，原因是题目要求的 source 模式尚待开发，不是环境故障，也不属于已有产品基线。验收文件及断言原样保留，没有跳过、删除或把失败转为成功。交付时需执行 `npm run verify:complete`，让基线和新来源验收同时通过；不能只用基线成功说明新功能已完成。
+`npm run acceptance:source` 执行 `test/feature.test.mjs` 中完整的新来源验收。此命令在初始版本会以非零状态退出，原因是新的 source 模式尚待开发，不是环境故障，也不属于已有产品基线。验收文件及断言原样保留，没有跳过、删除或把失败转为成功。交付时需执行 `npm run verify:complete`，让基线和新来源验收同时通过；不能只用基线成功说明新功能已完成。
 
 ```sh
 npm run verify:complete
