@@ -7,11 +7,12 @@
     "node": "22.x"
   },
   "scripts": {
-    "test": "node --test test/baseline.test.mjs",
-    "test:feature": "node --test test/feature.test.mjs",
+    "test": "node --test test/baseline.test.mjs test/cli.test.mjs",
     "demo": "node src/cli.mjs demo",
     "demo:feature": "node src/cli.mjs demo --source",
-    "start": "node src/cli.mjs collect",
-    "provider": "node provider/server.mjs"
+    "provider": "node provider/server.mjs",
+    "acceptance:source": "node --test test/feature.test.mjs",
+    "collect": "node src/cli.mjs collect",
+    "verify:complete": "npm test && npm run acceptance:source"
   }
 }
