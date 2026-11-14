@@ -1,0 +1,17 @@
+{
+  "name": "acquisition-digital-waveforms",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "test": "node --test test/baseline.test.mjs",
+    "test:feature": "node --test test/feature.test.mjs",
+    "demo": "node src/cli.mjs demo",
+    "demo:feature": "node src/cli.mjs demo --source",
+    "start": "node src/cli.mjs collect",
+    "provider": "node provider/server.mjs"
+  }
+}

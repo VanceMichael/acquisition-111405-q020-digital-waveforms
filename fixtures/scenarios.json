@@ -1,0 +1,144 @@
+[
+  {
+    "name": "aliases-and-unknown",
+    "routes": [
+      {
+        "path": "/waveform",
+        "body": {
+          "runId": "r1",
+          "chunks": [
+            "/chunk/1",
+            "/chunk/2"
+          ],
+          "sealed": true
+        },
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/1",
+        "body": "$timescale 1 ns $end\n$scope module top $end\n$var wire 4 ! a $end\n$var wire 4 ! alias $end\n$upscope $end\n$enddefinitions $end\n#2\nbx",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/2",
+        "body": " !\n#3\nb10 !\n",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "expected": [
+      {
+        "runId": "r1",
+        "signalPath": "top.a",
+        "timePs": "2000",
+        "bits": "xxxx"
+      },
+      {
+        "runId": "r1",
+        "signalPath": "top.alias",
+        "timePs": "3000",
+        "bits": "0010"
+      }
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "large-time",
+    "routes": [
+      {
+        "path": "/waveform",
+        "body": {
+          "runId": "r2",
+          "chunks": [
+            "/chunk/1"
+          ],
+          "sealed": true
+        },
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/1",
+        "body": "$timescale 1 ps $end\n$scope module top $end\n$var wire 1 ! q $end\n$upscope $end\n$enddefinitions $end\n#9007199254740993\n1!\n",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "expected": [
+      {
+        "runId": "r2",
+        "signalPath": "top.q",
+        "timePs": "9007199254740993",
+        "bits": "1"
+      }
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "dump-state",
+    "routes": [
+      {
+        "path": "/waveform",
+        "body": {
+          "runId": "r2",
+          "chunks": [
+            "/chunk/1"
+          ],
+          "sealed": true
+        },
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/1",
+        "body": "$timescale 1 ns $end\n$scope module top $end\n$var wire 1 ! q $end\n$upscope $end\n$enddefinitions $end\n#1\n$dumpoff\nx!\n$end\n#2\n$dumpon\n1!\n$end\n",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "expected": [
+      {
+        "runId": "r2",
+        "signalPath": "top.q",
+        "timePs": "1000",
+        "bits": "x",
+        "status": "suspended"
+      },
+      {
+        "runId": "r2",
+        "signalPath": "top.q",
+        "timePs": "2000",
+        "bits": "1",
+        "status": "observed"
+      }
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "incompatible-alias-width",
+    "routes": [
+      {
+        "path": "/waveform",
+        "body": {
+          "runId": "r2",
+          "chunks": [
+            "/chunk/1"
+          ],
+          "sealed": true
+        },
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/1",
+        "body": "$timescale 1 ns $end\n$scope module top $end\n$var wire 1 ! q $end\n$var wire 2 ! alias $end\n$upscope $end\n$enddefinitions $end\n#1\n1!\n",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "expected": [],
+    "forbidden": []
+  }
+]
