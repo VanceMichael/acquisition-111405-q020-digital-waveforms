@@ -140,5 +140,161 @@
     ],
     "expected": [],
     "forbidden": []
+  },
+  {
+    "name": "cross-chunk-tokens",
+    "routes": [
+      {
+        "path": "/waveform",
+        "body": {
+          "runId": "r3",
+          "chunks": [
+            "/chunk/1",
+            "/chunk/2",
+            "/chunk/3"
+          ],
+          "sealed": true
+        },
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/1",
+        "body": "$timescale 1 ns $end\n$scope module top $end\n$var wire 8 ! bus $end\n$upscope $end\n$enddefinitions $end\n#4\nb110",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/2",
+        "body": "01 ",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/3",
+        "body": "!\n#5\nb1 !\n",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "expected": [
+      {
+        "runId": "r3",
+        "signalPath": "top.bus",
+        "timePs": "4000",
+        "bits": "00011001",
+        "status": "observed"
+      },
+      {
+        "runId": "r3",
+        "signalPath": "top.bus",
+        "timePs": "5000",
+        "bits": "00000001",
+        "status": "observed"
+      }
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "suspended-gap",
+    "routes": [
+      {
+        "path": "/waveform",
+        "body": {
+          "runId": "r4",
+          "chunks": [
+            "/chunk/1"
+          ],
+          "sealed": true
+        },
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/1",
+        "body": "$timescale 1 us $end\n$scope module top $end\n$scope module sub $end\n$var wire 1 ! flag $end\n$upscope $end\n$upscope $end\n$enddefinitions $end\n#0\n$dumpvars\n0!\n$end\n#3\n$dumpoff\nx!\n$end\n#9\n$dumpon\n$end\n#12\n1!\n",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "expected": [
+      {
+        "runId": "r4",
+        "signalPath": "top.sub.flag",
+        "code": "!",
+        "timePs": "0",
+        "bits": "0",
+        "status": "observed"
+      },
+      {
+        "runId": "r4",
+        "signalPath": "top.sub.flag",
+        "timePs": "3000000",
+        "bits": "x",
+        "status": "suspended"
+      },
+      {
+        "runId": "r4",
+        "signalPath": "top.sub.flag",
+        "timePs": "12000000",
+        "bits": "1",
+        "status": "observed"
+      }
+    ],
+    "forbidden": [
+      {
+        "timePs": "9000000",
+        "bits": "1"
+      },
+      {
+        "timePs": "3000000",
+        "bits": "0"
+      }
+    ]
+  },
+  {
+    "name": "unsealed-partial",
+    "routes": [
+      {
+        "path": "/waveform",
+        "body": {
+          "runId": "r5",
+          "chunks": [
+            "/chunk/1",
+            "/chunk/2"
+          ],
+          "sealed": false
+        },
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/1",
+        "body": "$timescale 1 ns $end\n$scope module top $end\n$var wire 2 ! v $end\n$upscope $end\n$enddefinitions $end\n#7\nb11 !\n",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "path": "/chunk/2",
+        "body": "#8\nb0",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "expected": [
+      {
+        "runId": "r5",
+        "signalPath": "top.v",
+        "timePs": "7000",
+        "bits": "11",
+        "status": "observed"
+      }
+    ],
+    "forbidden": [
+      {
+        "timePs": "8000"
+      }
+    ],
+    "complete": false
   }
 ]

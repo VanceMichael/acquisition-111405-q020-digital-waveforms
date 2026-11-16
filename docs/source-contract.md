@@ -10,7 +10,18 @@ GET /waveform 返回runId、chunks按顺序URL和sealed。内容为VCD本地子�
 
 既有调用是 `collect({baseUrl, archive, mode})`。`mode` 默认为 `legacy`；新增来源使用 `source`。返回 `{records, complete, issues, evidenceCount}`：`records` 为本次业务结果，`complete` 表示本次领取及解释是否有未决缺口，`issues` 为带来源位置的可复核问题，`evidenceCount` 为实际接收的原文数。新结果可增加字段，示例不是封闭 schema。
 
-每个落库记录的 `id` 必须非空且稳定，由业务身份决定；业务所需的多身份关系不能都压缩进 `id`。`archive.commit` 接受 `records`、`exchanges` 与 `issues`；原文在 `raw/` 以 SHA-256 寻址，索引引用原文与记录修订。既有归档索引 schema=1 可以扩展，但旧摘要记录必须仍可读取。
+`source` 模式另返回 `runId`。记录按每次观察生成，包含 `runId`、`signalPath`、`code`、`timePs`、`bits`、`status`、`sourceSpan`、`declaration` 与 `aliases`。同一短代码声明多个别名时，每个别名各有一条记录，`aliases` 列出全部声明；宽度不兼容时整段不解释并留下 `alias-width-conflict`。`sourceSpan` 给出观察在原文中的 `{url, chunk, offset}` 起止与字节长度，`declaration.sourceSpan` 指向该别名的 `$var` 声明。
+
+解释规则：
+
+- 分块按索引次序到达，边界落在词法单元中间时保留字节，等后续分块闭合后再解释；本次接收结束时仍未闭合的片段记为 `incomplete-fragment`，不产生记录。
+- `#N` 与 `$timescale` 均按整数精确换算为 `timePs` 十进制字符串，不经浮点。
+- 未知（`x`）与高阻（`z`）原样保留；向量短值最高位为 `x`/`z` 时同符号扩展，否则补 `0`。
+- `$dumpoff` 之后所有观测 `status=suspended`，直到 `$dumpon`；`$dumpon` 只恢复明确给出的值，不补造期间变化，也不为静默区间生成观测。
+- 声明之前的值、未声明的短代码、宽度溢出、不支持的语法，均不转为业务记录，而是留下带来源位置的 `issues` 并把 `complete` 置为 false。
+- 来源未封存（`sealed=false`）或任一分块未取到时，已收到的独立部分照常归档，但 `complete` 为 false。
+
+每个落库记录的 `id` 必须非空且稳定，由业务身份决定；业务所需的多身份关系不能都压缩进 `id`。`archive.commit` 接受 `records`、`exchanges` 与 `issues`；原文在 `raw/` 以 SHA-256 寻址，索引引用原文与记录修订。既有归档索引 schema=1 可以扩展，但旧摘要记录必须仍可读取。重复领取同一来源不会重复写入同一记录修订或同一条问题。
 
 应用不得伪造原文，也不能把摘要模式当成新来源成功。HTTP 相对链接基于来源 origin 解析，不能访问其他站点。错误状态、缺数据和空的有效结果应区分。来源解释未决时 `complete=false`，已收的安全独立部分可以保留。
 

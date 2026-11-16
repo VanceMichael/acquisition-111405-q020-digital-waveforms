@@ -7,7 +7,7 @@
     "node": "22.x"
   },
   "scripts": {
-    "test": "node --test test/baseline.test.mjs test/cli.test.mjs",
+    "test": "node --test test/baseline.test.mjs test/cli.test.mjs test/boundary.test.mjs",
     "demo": "node src/cli.mjs demo",
     "demo:feature": "node src/cli.mjs demo --source",
     "provider": "node provider/server.mjs",

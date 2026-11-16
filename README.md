@@ -1,6 +1,6 @@
 # 数字波形资料的别名信号与采样状态接收
 
-这是资料接收服务的独立工作副本。当前版本支持人工摘要的领取、原文归档、重复导入和归档检查；新来源的业务行为尚未接入。
+这是资料接收服务的独立工作副本。当前版本支持人工摘要的领取、原文归档、重复导入和归档检查；数字波形来源（`source` 模式）已接入，按层次信号名解释分块到达的 VCD 本地子集。
 
 ## 环境
 
@@ -13,7 +13,7 @@ npm run demo
 
 `npm test` 是初始产品的基线回归，验证现有摘要通路、原文摘要检查、本地来源响应，以及 CLI 在独立进程中的真实领取、重复导入和持久归档检查。该产品是一次执行后退出的采集程序，不提供常驻 HTTP 应用；`npm run collect` 执行领取，`npm run provider` 仅单独启动测试来源。
 
-`npm run acceptance:source` 执行 `test/feature.test.mjs` 中完整的新来源验收。此命令在初始版本会以非零状态退出，原因是新的 source 模式尚待开发，不是环境故障，也不属于已有产品基线。验收文件及断言原样保留，没有跳过、删除或把失败转为成功。交付时需执行 `npm run verify:complete`，让基线和新来源验收同时通过；不能只用基线成功说明新功能已完成。
+`npm run acceptance:source` 执行 `test/feature.test.mjs` 中完整的新来源验收，覆盖别名、未知/高阻、大时标、暂停转储、跨分块词法边界和未封存来源。`npm test` 除基线外还运行 `test/boundary.test.mjs` 中的边界验证。交付时执行 `npm run verify:complete`，让基线和新来源验收同时通过；不能只用基线成功说明新功能已完成。
 
 ```sh
 npm run verify:complete
@@ -35,6 +35,7 @@ docker run --rm --network none acquisition-digital-waveforms:local npm run demo:
 ## 工作入口
 
 - `src/collector.mjs` 的 `collect` 是业务入口；既有 `legacy` 模式要保留。
+- `src/vcd.mjs` 是增量 VCD 解释器，按到达字节流工作，不依赖整份文档。
 - `src/transport.mjs` 提供原文字节与请求证据，错误状态由业务层判断。
 - `src/archive.mjs` 支持内容寻址原文与记录修订，存储位置由调用方传入。
 - `provider/server.mjs` 提供允许访问的本地合成来源，路径和例子见 `docs/source-contract.md`。

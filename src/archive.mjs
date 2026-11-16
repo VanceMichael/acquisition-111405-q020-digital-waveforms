@@ -55,7 +55,12 @@ export async function openArchive(directory) {
             next.records.push({...structuredClone(record), revision});
           }
         }
-        next.issues.push(...structuredClone(issues));
+        for (const issue of issues) {
+          const revision = digest(Buffer.from(JSON.stringify(issue)));
+          if (!next.issues.some(previous => digest(Buffer.from(JSON.stringify(previous))) === revision)) {
+            next.issues.push(structuredClone(issue));
+          }
+        }
         await atomicWrite(indexPath, JSON.stringify(next, null, 2) + '\n');
         state = next;
         return structuredClone(state);
